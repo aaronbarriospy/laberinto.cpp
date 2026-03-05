@@ -1,213 +1,196 @@
-#include <iostream>   // Permite usar cout para imprimir en la consola (nuestra visualización ASCII).
-#include <vector>     // Estructura de datos dinámica, más segura y flexible que los arrays tradicionales de C.
-#include <cstdlib>    // Necesario para las funciones rand() y srand() que dan la aleatoriedad.
-#include <ctime>      // Necesario para time(), usado para inicializar la semilla aleatoria.
-#include <chrono>     // Librería moderna de C++ para medir el tiempo de ejecución con alta precisión.
-#include <string>     // Para manipular cadenas de texto fácilmente.
+#include <iostream>   // Traigo la herramienta iostream para poder imprimir en mi pantalla.
+#include <vector>     // Uso vector porque es como una caja elastica, mejor que las listas antiguas de C.
+#include <cstdlib>    // Necesito esto para usar rand() y poder sacar numeros al azar.
+#include <ctime>      // Traigo el reloj de la compu para que mis laberintos siempre sean unicos.
+#include <chrono>     // Mi cronometro para medir cuanto tardo en cumplir el reto.
+#include <string>     // Para poder usar textos largos sin problemas.
 
-using namespace std;  // Nos evita escribir "std::" antes de cada cout, vector, string, etc.
-
-// ---------------------------------------------------------
-// 1. CONFIGURACIÓN VISUAL (CONSTANTES)
-// ---------------------------------------------------------
-// Usamos constantes para que si en el futuro quieres cambiar los emojis o caracteres,
-// solo tengas que hacerlo en un lugar y no buscar por todo el código.
-const char WALL = '#';   // Representa un muro infranqueable.
-const char PATH = ' ';   // Representa un espacio por el que podemos caminar.
-const char ROUTE = '*';  // Representa el camino correcto que encuentra nuestro algoritmo.
-const char START = 'E';  // La Entrada del laberinto.
-const char EXIT = 'S';   // La Salida del laberinto.
+using namespace std;  // Uso este atajo para no tener que escribir "std::" antes de cada orden.
 
 // ---------------------------------------------------------
-// 2. VECTORES DE DIRECCIÓN (TRUCO DE MAGIA MATEMÁTICO)
+// 1. MIS REGLAS VISUALES (CONSTANTES GLOBALES)
 // ---------------------------------------------------------
-// En lugar de hacer 4 "if" kilométricos para ir Arriba, Derecha, Abajo e Izquierda,
-// usamos estos dos arrays. Si estamos en (x, y) y queremos movernos, sumamos dx[i] y dy[i].
-// Índice 0: ( 0, -1) -> Moverse hacia Arriba.
-// Índice 1: ( 1,  0) -> Moverse hacia la Derecha.
-// Índice 2: ( 0,  1) -> Moverse hacia Abajo.
-// Índice 3: (-1,  0) -> Moverse hacia la Izquierda.
-int dx[] = {0, 1, 0, -1};
-int dy[] = {-1, 0, 1, 0};
+// Aqui defino mis piezas de lego. Uso 'const' para que nadie me las cambie por accidente.
+const char MURO = '#';   // Este es el simbolo de mis paredes.
+const char CAMINO = ' '; // Espacio vacio por donde voy a caminar.
+const char RUTA = '*';   // Las migajas de pan que voy a dejar para cuando encuentre la salida.
+const char INICIO = 'E'; // E de Entrada.
+const char SALIDA = 'S'; // S de Salida.
 
 // ---------------------------------------------------------
-// 3. LA CLASE PRINCIPAL DEL SISTEMA
+// 2. MIS MOVIMIENTOS (TRUCO MATEMATICO)
 // ---------------------------------------------------------
-class MazeSystem {
+// En lugar de hacer mil preguntas con 'if', uso estas dos listas para girar.
+// Indice 0: Arriba (0 en X, -1 en Y)
+// Indice 1: Derecha (1 en X, 0 en Y)
+// Indice 2: Abajo (0 en X, 1 en Y)
+// Indice 3: Izquierda (-1 en X, 0 en Y)
+int dir_x[] = {0, 1, 0, -1};
+int dir_y[] = {-1, 0, 1, 0};
+
+// ---------------------------------------------------------
+// 3. LA FABRICA (MI CLASE PRINCIPAL)
+// ---------------------------------------------------------
+class SistemaLaberinto {
 private:
-    int width, height;             // Ancho y alto del laberinto.
-    vector<vector<char>> grid;     // Una matriz bidimensional (vector de vectores) que guarda nuestro mapa.
+    int ancho, alto;                   // Cajas para guardar el tamano que quiero para mi mapa.
+    vector<vector<char>> cuadricula;   // Aca creo un mapa bidimensional en donde cada celdita guarda un solo caracter.
 
-    // Función auxiliar que responde: "¿Esta coordenada (x,y) está dentro de los bordes del mapa?"
-    bool isValid(int x, int y) {
-        // Retorna verdadero (true) solo si x e y son mayores a 0 y menores al límite.
-        // Esto evita que rompamos los muros exteriores del laberinto.
-        return (x > 0 && x < width - 1 && y > 0 && y < height - 1);
+    // Mi guardia de seguridad: me avisa si estoy intentando salirme del mapa.
+    bool esValido(int x, int y) {
+        // Devuelvo verdadero solo si mis coordenadas estan dentro de los limites permitidos.
+        return (x > 0 && x < ancho - 1 && y > 0 && y < alto - 1);
     }
 
     // ---------------------------------------------------------
-    // GENERACIÓN: Algoritmo "Recursive Backtracker" (DFS)
+    // GENERACION: Mi algoritmo Recursive Backtracker (DFS)
     // ---------------------------------------------------------
-    void generateDFS(int x, int y) {
-        grid[y][x] = PATH; // El primer paso: pisamos la celda actual y la convertimos en un camino libre.
+    void generarDFS(int x, int y) {
+        cuadricula[y][x] = CAMINO; // Piso la celda actual y la convierto en un pasillo libre.
 
-        int dirs[] = {0, 1, 2, 3}; // Creamos una lista con las 4 direcciones posibles.
-        
-        // Bucle para desordenar (mezclar) las direcciones aleatoriamente.
-        // Si no hacemos esto, el laberinto siempre tendría forma de "escalera" o un patrón repetitivo.
+        int direcciones[] = {0, 1, 2, 3}; // Preparo mis 4 opciones de giro.
+
+        // Mezclo mis direcciones al azar para que el laberinto no sea aburrido y predecible.
         for (int i = 0; i < 4; i++) {
-            int r = rand() % 4;         // Elegimos un número al azar entre 0 y 3.
-            swap(dirs[i], dirs[r]);     // Intercambiamos la dirección actual con la elegida al azar.
+            int aleatorio = rand() % 4;                   // Saco un numero del 0 al 3.
+            swap(direcciones[i], direcciones[aleatorio]); // Intercambio la posicion actual con la que salio al azar.
         }
 
-        // Ahora intentamos avanzar en las 4 direcciones, pero en el orden aleatorio que acabamos de crear.
+        // Ahora intento avanzar hacia las 4 direcciones ya mezcladas.
         for (int i = 0; i < 4; i++) {
-            // ¡OJO AQUÍ! Multiplicamos por 2. 
-            // En la generación de laberintos, saltamos una celda de por medio (nx, ny).
-            // Esa celda que saltamos es el "muro" que luego decidiremos si derribar o no.
-            int nx = x + dx[dirs[i]] * 2;
-            int ny = y + dy[dirs[i]] * 2;
+            // Multiplico por 2 porque para cavar necesito saltar un muro y dejar la pared de por medio.
+            int nuevo_x = x + dir_x[direcciones[i]] * 2;
+            int nuevo_y = y + dir_y[direcciones[i]] * 2;
 
-            // Si la celda destino a la que saltamos está dentro del mapa y TODAVÍA es un muro...
-            if (isValid(nx, ny) && grid[ny][nx] == WALL) {
-                // ...entonces derribamos el muro que quedó en medio de nuestro salto.
-                // Lo calculamos sumando solo 1 vez la dirección desde nuestra posición original (x, y).
-                grid[y + dy[dirs[i]]][x + dx[dirs[i]]] = PATH; 
-                
-                // Llamamos a la misma función (Recursividad) desde la nueva posición para seguir escarbando.
-                generateDFS(nx, ny); 
+            // Le pregunto a mi guardia si el salto es valido y si aterrice en un muro virgen.
+            if (esValido(nuevo_x, nuevo_y) && cuadricula[nuevo_y][nuevo_x] == MURO) {
+                // Si todo esta bien, derribo el muro que quedo en el medio de mi salto.
+                cuadricula[y + dir_y[direcciones[i]]][x + dir_x[direcciones[i]]] = CAMINO;
+
+                // Uso recursividad: me llamo a mi mismo desde la nueva posicion para seguir cavando.
+                generarDFS(nuevo_x, nuevo_y);
             }
         }
     }
 
     // ---------------------------------------------------------
-    // RESOLUCIÓN: Algoritmo Backtracking (Ensayo y Error Lógico)
+    // RESOLUCION: Mi algoritmo Backtracking (Ensayo y Error)
     // ---------------------------------------------------------
-    bool solveBacktracking(int x, int y) {
-        // 1. CASO BASE (Condición de victoria):
-        // Si nuestras coordenadas actuales coinciden con la meta (esquina inferior derecha)...
-        if (x == width - 2 && y == height - 2) {
-            grid[y][x] = ROUTE; // Marcamos la meta como parte de la ruta.
-            return true;        // Gritamos "¡Lo encontré!" hacia atrás en la cadena recursiva.
+    bool resolverBacktracking(int x, int y) {
+        // CASO BASE: Compruebo si ya llegue a la esquina inferior derecha (mi meta).
+        if (x == ancho - 2 && y == alto - 2) {
+            cuadricula[y][x] = RUTA; // Marco que pise la salida.
+            return true;             // Grito "victoria" y termino la busqueda hacia atras.
         }
 
-        // 2. REGLA DE AVANCE:
-        // Solo podemos pisar esta celda si es un camino vacío (PATH) o es la entrada (START).
-        if (grid[y][x] == PATH || grid[y][x] == START) {
-            
-            // Marcamos esta celda temporalmente como parte de la ruta correcta con un '*'.
-            // (A menos que sea la 'E' de entrada, para no borrar la letra).
-            if (grid[y][x] != START) grid[y][x] = ROUTE; 
+        // Solo avanzo si la celda es un camino libre o si es la entrada.
+        if (cuadricula[y][x] == CAMINO || cuadricula[y][x] == INICIO) {
 
-            // Exploramos las 4 direcciones adyacentes posibles paso a paso.
+            // Dejo mi migaja de pan (el asterisco) para marcar la ruta que estoy probando.
+            // Pongo un if para asegurarme de no borrar mi E de entrada.
+            if (cuadricula[y][x] != INICIO) cuadricula[y][x] = RUTA;
+
+            // Miro hacia mis 4 direcciones posibles.
             for (int i = 0; i < 4; i++) {
-                int nx = x + dx[i]; // Aquí NO multiplicamos por 2, caminamos normal.
-                int ny = y + dy[i];
+                int nuevo_x = x + dir_x[i]; // Aqui avanzo de a 1, ya no multiplico por 2.
+                int nuevo_y = y + dir_y[i];
 
-                // Entramos a la celda adyacente. Si esa celda eventualmente nos lleva a la salida (retorna true)...
-                if (solveBacktracking(nx, ny)) {
-                    return true; // ...entonces esta celda también es el camino correcto. Retornamos true.
+                // Doy el paso. Si este camino eventualmente me lleva al final, devuelvo verdadero.
+                if (resolverBacktracking(nuevo_x, nuevo_y)) {
+                    return true;
                 }
             }
 
-            // 3. EL "BACKTRACK" (EL RETROCESO):
-            // Si el bucle "for" terminó y ninguna de las 4 direcciones nos llevó a la salida,
-            // significa que nos metimos en un callejón sin salida.
-            // Así que DESHACEMOS nuestra pisada, borramos el '*' y volvemos a poner un espacio vacío.
-            if (grid[y][x] != START) grid[y][x] = PATH;
+            // BACKTRACKING: Si intente por todos lados y no hay salida, recojo mi migaja y retrocedo.
+            if (cuadricula[y][x] != INICIO) cuadricula[y][x] = CAMINO;
         }
-        
-        // Si chocamos con un muro o la celda ya estaba visitada, retornamos falso para que el código busque otro lado.
+
+        // Si choque con pared o con mi propia ruta, aviso que por aqui no es.
         return false;
     }
 
 public:
-    // Constructor de la clase: Se ejecuta automáticamente al crear un "MazeSystem".
-    MazeSystem(int w, int h) {
-        // Los laberintos basados en este algoritmo requieren que el ancho y alto sean números impares
-        // para que los muros y caminos encajen perfectamente. Si pasamos un número par, le sumamos 1.
-        width = (w % 2 == 0) ? w + 1 : w;
-        height = (h % 2 == 0) ? h + 1 : h;
-        
-        // Llenamos toda la matriz de la cuadrícula con muros ('#') desde el principio.
-        grid.assign(height, vector<char>(width, WALL));
+    // El constructor: se ejecuta apenas creo mi sistema de laberinto.
+    SistemaLaberinto(int ancho_deseado, int alto_deseado) {
+        // El algoritmo exige que el mapa sea impar. Si me pasan un numero par, lo arreglo sumandole 1.
+        ancho = (ancho_deseado % 2 == 0) ? ancho_deseado + 1 : ancho_deseado;
+        alto = (alto_deseado % 2 == 0) ? alto_deseado + 1 : alto_deseado;
+
+        // Relleno toda mi matriz con muros solidos antes de empezar a cavar.
+        cuadricula.assign(alto, vector<char>(ancho, MURO));
     }
 
-    // Método público para iniciar la generación.
-    void generateMaze() {
-        srand(time(NULL)); // Inicializamos la semilla aleatoria usando el reloj de la computadora.
-        generateDFS(1, 1); // Empezamos a escarbar el laberinto desde la coordenada (1,1).
-        
-        grid[1][1] = START;                 // Ponemos la letra 'E' en la entrada.
-        grid[height - 2][width - 2] = EXIT; // Ponemos la letra 'S' en la salida.
+    // Boton publico para generar.
+    void generarLaberinto() {
+        srand(time(NULL)); // Enciendo la aleatoriedad vinculandola con la hora actual.
+        generarDFS(1, 1);  // Empiezo a picar desde la coordenada 1,1.
+
+        cuadricula[1][1] = INICIO;                 // Pongo la E de entrada.
+        cuadricula[alto - 2][ancho - 2] = SALIDA;  // Pongo la S de salida.
     }
 
-    // Método público para iniciar la resolución.
-    void solveMaze() {
-        solveBacktracking(1, 1); // Empezamos a buscar la salida desde (1,1).
-        
-        // El backtracking podría sobrescribir la E y la S con el asterisco '*',
-        // así que por estética visual, las volvemos a dibujar al terminar.
-        grid[1][1] = START; 
-        grid[height - 2][width - 2] = EXIT; 
+    // Boton publico para resolver.
+    void resolverLaberinto() {
+        resolverBacktracking(1, 1); // Empiezo a buscar la salida desde mi entrada en 1,1.
+
+        // Vuelvo a pintar la E y la S por si mi algoritmo las piso por accidente.
+        cuadricula[1][1] = INICIO;
+        cuadricula[alto - 2][ancho - 2] = SALIDA;
     }
 
-    // Imprime la matriz en la consola fila por fila, columna por columna.
-    void displayMaze() {
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                cout << grid[y][x] << ' '; // Imprimimos el caracter seguido de un espacio para que no se vea aplastado.
+    // Boton publico para mostrar mi obra de arte en la consola.
+    void mostrarLaberinto() {
+        for (int y = 0; y < alto; y++) {
+            for (int x = 0; x < ancho; x++) {
+                cout << cuadricula[y][x] << ' '; // Imprimo celda por celda y le sumo un espacio para separarlas.
             }
-            cout << '\n'; // Salto de línea al terminar una fila.
+            cout << '\n'; // Salto de linea al terminar cada fila.
         }
-        // Imprime una línea separadora bonita debajo del laberinto.
-        cout << string(width * 2, '-') << '\n';
+        // Dibujo una linea separadora usando guiones en la parte inferior.
+        cout << string(ancho * 2, '-') << '\n';
     }
 };
 
 // ---------------------------------------------------------
-// 4. EL PUNTO DE ENTRADA DEL PROGRAMA (MAIN)
+// 4. EL JEFE DEL PROGRAMA (MAIN)
 // ---------------------------------------------------------
 int main(int argc, char* argv[]) {
-    // argc = Cantidad de argumentos pasados por consola.
-    // argv = Los valores de esos argumentos.
-    
-    int width = 21;  // Tamaño por defecto si el usuario no especifica nada.
-    int height = 21; 
+    // argc me dice cuantos parametros me pasaron por la consola de MSYS2.
+    // argv es la lista con el texto de esos parametros.
 
-    // Requisito: "El laberinto se define con parámetros externos".
-    // Si el usuario ejecuta el programa pasándole números (ej: ./laberinto 15 15), argc será mayor o igual a 3.
-    // (argv[0] es el nombre del programa, argv[1] el ancho, argv[2] el alto).
+    int ancho_final = 21;  // Mi tamano por defecto si decido no escribir parametros en la terminal.
+    int alto_final = 21;
+
+    // Si ejecuto el programa en la consola como './laberinto 15 15', atrapo esos numeros aqui.
     if (argc >= 3) {
-        width = stoi(argv[1]);  // Convierte el texto recibido del ancho a un número entero (String TO Integer).
-        height = stoi(argv[2]); // Convierte el texto recibido del alto a un número entero.
+        ancho_final = stoi(argv[1]);  // stoi = String TO Integer (convierto el texto a un numero).
+        alto_final = stoi(argv[2]);
     }
 
-    cout << "Inicializando Laberinto Maestro (" << width << "x" << height << ")...\n";
-    MazeSystem maze(width, height); // Creamos el objeto laberinto.
+    cout << "Inicializando mi Laberinto Maestro (" << ancho_final << "x" << alto_final << ")...\n";
+    SistemaLaberinto miLaberinto(ancho_final, alto_final); // Construyo mi objeto laberinto con las medidas dadas.
 
-    // --- REQUISITO: MEDICIÓN DE TIEMPO DE GENERACIÓN ---
-    auto startGen = chrono::high_resolution_clock::now(); // Marca de tiempo inicial.
-    maze.generateMaze();                                  // Generamos el laberinto.
-    auto endGen = chrono::high_resolution_clock::now();   // Marca de tiempo final.
-    // Calculamos la diferencia en milisegundos.
-    chrono::duration<double, milli> genTime = endGen - startGen; 
+    // --- MIDO MI TIEMPO DE GENERACION ---
+    auto inicioGen = chrono::high_resolution_clock::now(); // Prendo mi cronometro.
+    miLaberinto.generarLaberinto();                        // Genero mi mapa al azar.
+    auto finGen = chrono::high_resolution_clock::now();    // Apago el cronometro.
+    chrono::duration<double, milli> tiempoGen = finGen - inicioGen; // Calculo la diferencia en milisegundos.
 
     cout << "Laberinto Generado:\n";
-    maze.displayMaze(); // Mostramos cómo quedó vacío.
+    miLaberinto.mostrarLaberinto(); // Lo imprimo vacio para verlo.
 
-    // --- REQUISITO: MEDICIÓN DE TIEMPO DE RESOLUCIÓN ---
-    auto startSolve = chrono::high_resolution_clock::now();
-    maze.solveMaze();                                     // Algoritmo buscando la salida.
-    auto endSolve = chrono::high_resolution_clock::now();
-    chrono::duration<double, milli> solveTime = endSolve - startSolve;
+    // --- MIDO MI TIEMPO DE RESOLUCION ---
+    auto inicioRes = chrono::high_resolution_clock::now(); // Prendo el cronometro otra vez.
+    miLaberinto.resolverLaberinto();                       // Lanzo el algoritmo para que busque la salida.
+    auto finRes = chrono::high_resolution_clock::now();    // Apago el cronometro.
+    chrono::duration<double, milli> tiempoRes = finRes - inicioRes; // Saco el tiempo final.
 
     cout << "Laberinto Resuelto:\n";
-    maze.displayMaze(); // Mostramos el camino resuelto con asteriscos.
+    miLaberinto.mostrarLaberinto(); // Imprimo el mapa final con la ruta resuelta.
 
-    // Imprimimos las estadísticas de optimización que pide el entregable.
-    cout << "Tiempo de generacion: " << genTime.count() << " ms\n";
-    cout << "Tiempo de resolucion: " << solveTime.count() << " ms\n";
+    // Imprimo mis metricas para el entregable.
+    cout << "Tiempo de generacion: " << tiempoGen.count() << " ms\n";
+    cout << "Tiempo de resolucion: " << tiempoRes.count() << " ms\n";
 
-    return 0; // Termina el programa exitosamente.
+    return 0; // Termino mi programa sin errores.
 }
