@@ -31,10 +31,10 @@ int dir_y[] = {-1, 0, 1, 0};
 // ---------------------------------------------------------
 // 3. LA FABRICA (MI CLASE PRINCIPAL)
 // ---------------------------------------------------------
-class SistemaLaberinto {
+class SistemaLaberinto { // Establezco la clase para construir el laberinto. Son como planos de construccion
 private:
     int ancho, alto;                   // Cajas para guardar el tamano que quiero para mi mapa.
-    vector<vector<char>> cuadricula;   // Aca creo un mapa bidimensional en donde cada celdita guarda un solo caracter.
+    vector<vector<char>> cuadricula;   // Aca creo un mapa bidimensional(matriz) en donde cada celdita guarda un solo caracter.
 
     // Mi guardia de seguridad: me avisa si estoy intentando salirme del mapa.
     bool esValido(int x, int y) {
@@ -45,7 +45,7 @@ private:
     // ---------------------------------------------------------
     // GENERACION: Mi algoritmo Recursive Backtracker (DFS)
     // ---------------------------------------------------------
-    void generarDFS(int x, int y) {
+    void generarDFS(int x, int y) { /// Labura pero no devuelve numero como resultado.
         cuadricula[y][x] = CAMINO; // Piso la celda actual y la convierto en un pasillo libre.
 
         int direcciones[] = {0, 1, 2, 3}; // Preparo mis 4 opciones de giro.
@@ -158,8 +158,8 @@ int main(int argc, char* argv[]) {
     // argc me dice cuantos parametros me pasaron por la consola de MSYS2.
     // argv es la lista con el texto de esos parametros.
 
-    int ancho_final = 21;  // Mi tamano por defecto si decido no escribir parametros en la terminal.
-    int alto_final = 21;
+    int ancho_final = 10;  // Mi tamano por defecto si decido no escribir parametros en la terminal.
+    int alto_final = 10;
 
     // Si ejecuto el programa en la consola como './laberinto 15 15', atrapo esos numeros aqui.
     if (argc >= 3) {
