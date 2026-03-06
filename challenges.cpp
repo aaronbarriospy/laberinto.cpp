@@ -410,3 +410,282 @@ int main() {
 
     return 0;
 }
+
+CREAR la lista: int dx[] = {0, 2, 0, -2};
+CREAR la variable: int pos_x = 5;
+CREAR la variable: int direccion = 1; (Derecha)
+CREAR la variable: int nueva_x;
+
+CALCULAR: nueva_x = pos_x + dx[direccion];
+
+IMPRIMIR: "Mi posicion actual es: " seguido de pos_x + salto de línea.
+IMPRIMIR: "Si salto dos lugares a la derecha, estare en: " seguido de nueva_x + salto de línea.
+
+RETORNAR 0
+FIN DE LA FUNCIÓN PRINCIPAL
+
+#include <iostream>
+using namespace std;
+
+int main() {
+    int dx[] = {0, 2, 0, -2};
+    int pos_x = 5;
+    int direccion = 1;
+    int nueva_x;
+
+    nueva_x = pos_x + dx[direccion];
+
+    cout << "Mi posicion actual es" << pos_x << '\n';
+    cout << "Si salto dos lugares a la derecha, estare en: " << nueva_x << '\n';
+    return 0;
+
+}
+
+
+INICIO DE LA FUNCIÓN PRINCIPAL:
+
+CREAR la lista: int dirs[] = {0, 1, 2, 3};
+
+IMPRIMIR: "Antes del cambio, la primera direccion es: " + dirs[0] + salto de línea.
+
+// Aplicamos el intercambio:
+USAR la función: swap(dirs[0], dirs[3]);
+
+IMPRIMIR: "Despues del cambio, la primera direccion es: " + dirs[0] + salto de línea.
+
+RETORNAR 0
+FIN DE LA FUNCIÓN PRINCIPAL
+
+#include <iostream>
+using namespace std;
+
+int main() {
+    int dirs[] = {0, 1, 2, 3};
+    cout << "Antes del cambio, la primera direccion es: " << dirs[0] << '\n';
+    swap(dirs[0], dirs[3]);
+    cout << "Despues del cambio, la primera direccion es: " << dirs[0] << '\n';
+    return 0;
+}
+
+INICIO DE LA FUNCIÓN PRINCIPAL:
+
+CREAR la matriz: char grid[3][3] = {{'#', '#', '#'}, {'#', '*', '#'}, {'#', '#', '#'}} ;
+
+IMPRIMIR: "Escaneando la fila del medio..." + salto de línea.
+
+BUCLE FOR (desde int i = 0 hasta i < 3, sumando i++):
+{
+IMPRIMIR: el valor de grid[1][i] seguido de un espacio " ".
+}
+
+IMPRIMIR: un salto de línea final.
+
+RETORNAR 0
+FIN DE LA FUNCIÓN PRINCIPAL
+
+#include <iostream>
+using namespace std;
+
+int main() {
+    char grid[3][3] = {{'#', '#', '#'}, {'#', '#', '#'}, {'#', '#', '#'}};
+    cout << "Escaneando la fila del medio..." << '\n';
+    for (int i = 0; i < 3; i++) {
+        cout << grid[1][i] << " ";
+    }
+    cout << '\n';
+    return 0;
+}
+
+INICIO DE LA FUNCIÓN PRINCIPAL:
+
+CREAR la variable: int x = 5;
+CREAR la variable: int limite = 10;
+
+PREGUNTAR: SI x es mayor que 0 Y (&&) x es menor que limite {
+IMPRIMIR: "El movimiento es valido." + salto de línea.
+}
+SI NO {
+IMPRIMIR: "Te chocaste contra el borde del mapa." + salto de línea.
+}
+
+RETORNAR 0
+FIN DE LA FUNCIÓN PRINCIPAL
+
+#include <iostream>
+using namespace std;
+
+int main() {
+    int x = 5;
+    int limite = 10;
+    if (x > 0 && x < limite) {
+        cout << "El movimiento es valido" << '\n';
+    }
+    else {
+        cout << "Te chocaste contra el borde del mapa" << '\n';
+    }
+    return 0;
+}
+
+INICIO DE LA FUNCIÓN PRINCIPAL:
+
+CREAR la matriz: char mapa[3][3] = {{'#', '#', '#'}, {'#', ' ', '#'}, {'#', '#', '#'}} ;
+CREAR la constante: const char RUTA = '*';
+
+PREGUNTAR: SI el valor de mapa[1][1] es exactamente igual (==) a ' ' (un espacio en blanco) {
+// La celda está libre, así que la marcamos:
+CAMBIAR el valor de mapa[1][1] para que sea igual a RUTA
+IMPRIMIR: "Migaja dejada en el centro." + salto de línea.
+}
+
+RETORNAR 0
+FIN DE LA FUNCIÓN PRINCIPAL
+
+#include <iostream>
+using namespace std;
+
+int main() {
+    char mapa[3][3] = {{'#', '#', '#'}, {'#', ' ', '#'}, {'#', '#', '#'}};
+    const char RUTA = '*';
+    if (mapa[1][1] == ' ') {
+        mapa[1][1] = RUTA;
+        cout << "Migaja dejada en el centro" << '\n';
+    }
+    return 0;
+}
+
+
+FUERA Y ARRIBA DE LA FUNCIÓN PRINCIPAL:
+
+CREAR una función de tipo vacío (void) llamada picarMuro():
+{
+IMPRIMIR: "PUM! Muro destruido." + salto de línea.
+}
+
+INICIO DE LA FUNCIÓN PRINCIPAL:
+
+IMPRIMIR: "Llamando al minero..." + salto de línea.
+// Llamamos a la función por su nombre:
+EJECUTAR: picarMuro();
+IMPRIMIR: "Trabajo terminado." + salto de línea.
+
+RETORNAR 0
+FIN DE LA FUNCIÓN PRINCIPAL
+
+#include <iostream>
+using namespace std;
+
+void picarMuro() {
+    cout << "PUM! Muro destruido" << '\n';
+}
+
+int main () {
+    cout << "Llamando al minero..." << '\n';
+    picarMuro();
+    cout << "Trabajo terminado." << '\n';
+    return 0;
+}
+
+INICIO DE LA FUNCIÓN PRINCIPAL:
+
+CREAR la variable: int energia = 3;
+
+BUCLE WHILE (mientras energia sea mayor que 0):
+{
+IMPRIMIR: "Picando piedra... Energia restante: " seguido de energia + salto de línea.
+// Le restamos 1 a la energía
+RESTAR 1 a energia (se escribe energia--;);
+}
+
+IMPRIMIR: "Me quede sin energia. Fin del turno." + salto de línea.
+
+RETORNAR 0
+FIN DE LA FUNCIÓN PRINCIPAL
+
+#include <iostream>
+using namespace std;
+
+int main() {
+    int energia = 3;
+    while(energia > 0) {
+        cout << "Picando piedra... Energia restante: " << energia << '\n';
+        energia--;
+    }
+    cout << "Me quede sin energia. Fin del turno." << '\n';
+    return 0;
+}
+
+INCLUIR: <iostream>
+INCLUIR: <cstdlib>
+USAR el espacio de nombres std
+
+INICIO DE LA FUNCIÓN PRINCIPAL:
+
+// Tiramos un dado de 4 caras (del 0 al 3)
+CREAR la variable: int aleatorio = rand() % 4;
+
+IMPRIMIR: "El numero que salio sorteado es: " seguido de aleatorio + salto de línea.
+
+PREGUNTAR: SI aleatorio es exactamente igual a 0 {
+IMPRIMIR: "Vamos hacia ARRIBA" + salto de línea.
+}
+
+RETORNAR 0
+FIN DE LA FUNCIÓN PRINCIPAL
+
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+
+int main() {
+    int aleatorio = rand() % 4;
+    cout << "El numero que salio sorteado es: " << aleatorio << '\n';
+    if (aleatorio == 0) {
+        cout << "Vamos arriba" << '\n';
+    }
+    return 0;
+}
+
+
+INCLUIR: <iostream>
+INCLUIR: <queue> (La herramienta para hacer la fila)
+USAR el espacio de nombres std
+
+INICIO DE LA FUNCIÓN PRINCIPAL:
+
+CREAR una fila de números enteros llamada miCola (se escribe: queue<int> miCola;)
+
+IMPRIMIR: "Llega el cliente 10" + salto de línea.
+AGREGAR el número 10 a la fila (se escribe: miCola.push(10);)
+
+IMPRIMIR: "Llega el cliente 20" + salto de línea.
+AGREGAR el número 20 a la fila (se escribe: miCola.push(20);)
+
+// Miramos quién está primero en la fila
+IMPRIMIR: "El primero para ser atendido es: " seguido de miCola.front() + salto de línea.
+
+// Lo atendemos y lo sacamos de la fila
+IMPRIMIR: "Atendiendo y sacando al primer cliente..." + salto de línea.
+SACAR al primer cliente de la fila (se escribe: miCola.pop();)
+
+// Miramos quién quedó primero ahora
+IMPRIMIR: "Ahora el primero en la fila es: " seguido de miCola.front() + salto de línea.
+
+RETORNAR 0
+FIN DE LA FUNCIÓN PRINCIPAL
+
+#include <iostream>
+#include <queue>
+using namespace std;
+
+int main() {
+    queue<int> miCola;
+    cout << "Llega el cliente 10" << '\n';
+    miCola.push(10);
+    cout << "Llega el cliente 20" << '\n';
+    miCola.push(20);
+    cout << "El primero para ser atendido es:" <<miCola.front() << '\n';
+    cout << "Atendiendo y sacando al primer cliente..." << '\n';
+    miCola.pop();
+    cout << "Ahora el primero en la fila es: " << miCola.front() << '\n';
+    return 0;
+}
